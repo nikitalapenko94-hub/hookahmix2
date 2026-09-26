@@ -4,20 +4,18 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="theme-color" content="#071a14" />
-<title>AI Миксолог · Gelen Lounge</title>
-<meta name="description" content="Gelen Lounge AI Миксолог — подберём кальянный микс по настроению из базы 311 вкусов и 34 брендов. Режим гостя и мастера, наличие и справочник. 18+" />
+<title>Миксолог · Gelen Lounge</title>
+<meta name="description" content="Gelen Lounge Миксолог — подбор кальянного микса только из подтверждённых вкусов в наличии. 18+" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900;1000&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="app.css">
 </head>
 <body>
-
 <canvas id="smoke" aria-hidden="true"></canvas>
 <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
 <div class="grain" aria-hidden="true"></div>
 
-<!-- ===== 18+ ===== -->
 <div class="ageGun" id="ageGate">
   <div class="glass ageBox">
     <div class="logo">G</div>
@@ -31,100 +29,63 @@
   </div>
 </div>
 
-<!-- ===== Регистрация ===== -->
 <div class="authOverlay" id="authOverlay">
   <div class="glass authBox">
     <button class="authClose" onclick="closeAuth()" aria-label="Закрыть">×</button>
     <h2>Регистрация гостя</h2>
     <p>Оставь номер телефона — отправим код из SMS и сохраним тебя как гостя Gelen Lounge.</p>
-    <label class="authField">
-      <span>Телефон</span>
-      <input class="authInput" id="phoneInput" inputmode="tel" placeholder="+7 999 123-45-67" />
-    </label>
-    <div class="authActions sendOnly">
-      <button class="primary" onclick="sendSmsCode()">Получить код</button>
-      <button class="secondary" onclick="closeAuth()">Позже</button>
-    </div>
+    <label class="authField"><span>Телефон</span><input class="authInput" id="phoneInput" inputmode="tel" placeholder="+7 999 123-45-67" /></label>
+    <div class="authActions sendOnly"><button class="primary" onclick="sendSmsCode()">Получить код</button><button class="secondary" onclick="closeAuth()">Позже</button></div>
     <div class="authStep2">
-      <label class="authField">
-        <span>Код из SMS</span>
-        <input class="authInput" id="codeInput" inputmode="numeric" maxlength="6" placeholder="Введите код" />
-      </label>
-      <div class="authActions">
-        <button class="primary" onclick="verifySmsCode()">Подтвердить</button>
-        <button class="secondary" onclick="sendSmsCode()">Отправить ещё раз</button>
-      </div>
+      <label class="authField"><span>Код из SMS</span><input class="authInput" id="codeInput" inputmode="numeric" maxlength="6" placeholder="Введите код" /></label>
+      <div class="authActions"><button class="primary" onclick="verifySmsCode()">Подтвердить</button><button class="secondary" onclick="sendSmsCode()">Отправить ещё раз</button></div>
     </div>
-    <div class="authDemoCode" id="authDemoCode"></div>
-    <div class="authError" id="authError"></div>
-    <div class="authSuccess" id="authSuccess"></div>
-    <p class="notice">Сейчас это демо-режим без реальной SMS-отправки. Для настоящих SMS подключим Firebase / Supabase / SMS.ru / Twilio или другой сервис.</p>
+    <div class="authDemoCode" id="authDemoCode"></div><div class="authError" id="authError"></div><div class="authSuccess" id="authSuccess"></div>
+    <p class="notice">Сейчас это демо-режим без реальной SMS-отправки.</p>
   </div>
 </div>
 
 <main class="wrap">
-
   <nav class="nav" id="nav">
-    <div class="brand">
-      <div class="logo">G</div>
-      <div>Gelen Lounge<small>AI Миксолог</small></div>
-    </div>
+    <div class="brand"><div class="logo">G</div><div>Gelen Lounge<small>Миксолог</small></div></div>
     <div class="navSpacer"></div>
     <div class="pill" id="authStatus"><span class="dot"></span>Гость не зарегистрирован</div>
     <button class="pill" onclick="openAuth()" id="authTopButton">Регистрация</button>
   </nav>
 
-  <!-- ===== HERO ===== -->
   <section class="hero">
     <div class="reveal">
-      <div class="badge"><span class="dot"></span>Gelen Lounge · AI мастер-миксолог · 18+</div>
-      <h1>AI Миксолог<br><span class="grad">Gelen Lounge</span></h1>
-      <p class="lead">Залетай как к своим: опиши настроение, образ или вкус — AI-мастер соберёт микс под твой вайб. Напиши «как Бали», «ночной город», «первое свидание» — или просто «удиви».</p>
-
+      <div class="badge"><span class="dot"></span>Gelen Lounge · миксолог · 18+</div>
+      <h1>Миксолог<br><span class="grad">Gelen Lounge</span></h1>
+      <p class="lead">Опиши настроение, образ или желаемый вкус — сервис соберёт микс только из подтверждённых позиций, которые сейчас есть в наличии.</p>
       <div class="heroStats">
-        <div class="heroStat reveal"><b id="statFlavors">311</b><span>вкусов в базе</span></div>
-        <div class="heroStat reveal"><b id="statBrands">34</b><span>бренда</span></div>
-        <div class="heroStat reveal"><b id="statStock">43</b><span>в наличии Gelen</span></div>
+        <div class="heroStat reveal"><b id="statFlavors">87</b><span>вкусов в наличии</span></div>
+        <div class="heroStat reveal"><b id="statBrands">18</b><span>брендов</span></div>
+        <div class="heroStat reveal"><b id="statStock">87</b><span>подтверждено Gelen</span></div>
       </div>
     </div>
-
     <aside class="glass preview reveal">
       <h3>Что сделаем для тебя</h3>
       <ul>
-        <li><i>✦</i><span>понимаем настроение, реальные заметки и базу <b>30+ брендов</b>;</span></li>
-        <li><i>⚖</i><span>собираем микс от <b>2 до 6 вкусов</b> с гибкими процентами;</span></li>
-        <li><i>◍</i><span>показываем вкус, <b>крепость 1–10</b> и инфо по каждому компоненту;</span></li>
-        <li><i>◆</i><span>есть режим для <b>гостя</b> и для <b>мастера</b>;</span></li>
-        <li><i>▣</i><span>работает прямо по ссылке или QR-коду, который уже у вас есть.</span></li>
+        <li><i>✦</i><span>подбираем только из <b>актуального наличия</b> Gelen Lounge;</span></li>
+        <li><i>⚖</i><span>собираем микс от <b>2 до 6 вкусов</b> с процентами;</span></li>
+        <li><i>◍</i><span>показываем профиль, ориентировочную крепость и роль компонентов;</span></li>
+        <li><i>◆</i><span>не предлагаем позиции из общего справочника, которых нет в заведении;</span></li>
+        <li><i>▣</i><span>работает прямо по ссылке или QR-коду.</span></li>
       </ul>
     </aside>
   </section>
 
-  <!-- Бегущая строка брендов -->
-  <div class="marquee" aria-hidden="true">
-    <div class="marqueeTrack" id="marqueeTrack"></div>
-  </div>
+  <div class="marquee" aria-hidden="true"><div class="marqueeTrack" id="marqueeTrack"></div></div>
 
-  <!-- ===== ОСНОВНОЙ БЛОК ===== -->
   <section class="grid">
-
     <div class="glass panel reveal">
-      <div class="step"><b>1</b><span>Кто собирает</span></div>
-      <div class="toggle">
-        <button id="guestBtn" class="active" onclick="setMode('guest')">Гость</button>
-        <button id="masterBtn" onclick="setMode('master')">Мастер</button>
-      </div>
+      <div class="step"><b>1</b><span>База вкусов</span></div>
+      <div class="hintLine">✦ <span id="availabilityHint">Используем только подтверждённое наличие Gelen</span></div>
 
-      <div class="step"><b>2</b><span>База вкусов</span></div>
-      <div class="toggle">
-        <button id="stockBtn" class="active" onclick="setAvailability('stock')">В наличии</button>
-        <button id="allBtn" onclick="setAvailability('all')">Справочник</button>
-      </div>
-      <div class="hintLine">✦ <span id="availabilityHint">Предлагаем только то, что есть в Gelen</span></div>
-
-      <div class="step"><b>3</b><span>Запрос / ассоциация</span></div>
+      <div class="step"><b>2</b><span>Запрос / ассоциация</span></div>
       <div class="fieldWrap">
-        <textarea id="query" placeholder="Например: хочу сложный микс на 5 вкусов как вечер в Gelen Lounge">Хочу сложный микс на 5 вкусов как вечер в Gelen Lounge</textarea>
+        <textarea id="query" placeholder="Например: мягкий тропический микс без сильной кислоты">Хочу сложный микс на 5 вкусов как вечер в Gelen Lounge</textarea>
         <div class="counter" id="counter">0</div>
       </div>
 
@@ -140,57 +101,16 @@
         <button class="chip" onclick="quick('Удиви меня', this)">🧪 Удиви меня</button>
       </div>
 
-      <div class="row">
-        <button class="primary" onclick="submitMix()">Подобрать микс</button>
-        <button class="secondary surprise" onclick="quick('Удиви меня чем-то необычным, но вкусным', this)">✨ УДИВИ</button>
-      </div>
-      <p class="notice">Выбирай режим: только вкусы в наличии Gelen или расширенный справочник по 30+ брендам для вдохновения.</p>
+      <div class="row"><button class="primary" onclick="submitMix()">Подобрать микс</button><button class="secondary surprise" onclick="quick('Удиви меня чем-то необычным, но вкусным', this)">✨ УДИВИ</button></div>
+      <p class="notice">Каталог сформирован по фотографиям и подтверждённому наличию. Остаток в граммах может меняться — уточняйте у сотрудника Gelen Lounge.</p>
     </div>
 
-    <div class="glass result reveal" id="result">
-      <div class="empty">
-        <div>
-          <div class="emptyArt"></div>
-          <b>Микс появится здесь</b>
-          Напиши настроение или ассоциацию — и Gelen Lounge соберёт состав с процентами.
-        </div>
-      </div>
-    </div>
+    <div class="glass result reveal" id="result"><div class="empty"><div><div class="emptyArt"></div><b>Микс появится здесь</b>Напиши настроение или ассоциацию — и сервис соберёт состав с процентами.</div></div></div>
   </section>
 
-  <!-- ===== ЧАТ С МАСТЕРОМ ===== -->
-  <section class="glass masterChat reveal" id="masterChat">
-    <div class="masterChatHead">
-      <div>
-        <div class="masterChatTitle">AI Кальянный мастер Gelen</div>
-        <div class="masterChatSub">Можно общаться как с мастером: «хочу мягко», «не люблю кислоту», «сделай под девушку», «что выбрать новичку?»</div>
-      </div>
-      <div class="tagline ref">GPT-ready</div>
-    </div>
-    <div class="chatBox" id="chatBox">
-      <div class="msg bot">Привет, свой человек 🫶 Я AI-мастер Gelen Lounge. Расскажи настроение, крепость и что точно не любишь — подберу микс по базе вкусов и объясню как мастер.</div>
-    </div>
-    <div class="chatForm">
-      <input class="chatInput" id="chatInput" placeholder="Например: хочу мягко, сладко, без сильной кислоты" onkeydown="if(event.key==='Enter')askMaster()" />
-      <button class="chatSend" onclick="askMaster()">Спросить мастера</button>
-    </div>
-    <div class="chatQuick">
-      <button onclick="masterQuick('Я новичок, хочу мягкий вкус без кислоты')">Новичку</button>
-      <button onclick="masterQuick('Хочу удивиться, но чтобы было вкусно')">Удиви</button>
-      <button onclick="masterQuick('Сделай крепко и барно, как ночной город')">Покрепче</button>
-      <button onclick="masterQuick('Хочу десертный микс для спокойного вечера')">Десерт</button>
-      <button onclick="masterQuick('Подбери кислый тропический микс')">Кислый тропик</button>
-    </div>
-  </section>
-
-  <div class="footer">
-    <div><b>Gelen Lounge</b> · AI Миксолог · 18+</div>
-    <div>Кальян и табачные продукты не являются безопасными для здоровья.</div>
-  </div>
+  <div class="footer"><div><b>Gelen Lounge</b> · Миксолог · 18+</div><div>Кальян и табачные продукты не являются безопасными для здоровья.</div></div>
 </main>
-
 <div class="toast" id="toast"></div>
-
 <script src="flavors.js"></script>
 <script src="app.js"></script>
 </body>

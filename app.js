@@ -1,6 +1,6 @@
 /* ===========================================================
    GELEN LOUNGE · AI МИКСОЛОГ 2026
-   Логика: база вкусов, подбор микса, чат-мастер, анимации
+   Логика: подтверждённая база наличия, подбор микса, анимации
    =========================================================== */
 'use strict';
 
@@ -13,7 +13,6 @@ const STOCK_COUNT = flavors.filter(f => f.inStock).length;
 /* ---------- 2. СОСТОЯНИЕ ---------- */
 let mode = 'guest';
 let availability = 'stock';
-let chatHistory = [];
 let lastMix = null;
 
 const $ = id => document.getElementById(id);
@@ -38,21 +37,15 @@ function toast(msg) {
 }
 
 /* ---------- 4. НАСТРОЙКИ РЕЖИМОВ ---------- */
-function setMode(m) {
-  mode = m;
-  $('guestBtn').classList.toggle('active', m === 'guest');
-  $('masterBtn').classList.toggle('active', m === 'master');
+function setMode() {
+  mode = 'guest';
   if (lastMix) renderMix(lastMix.ings, lastMix.intent, lastMix.q);
 }
 
-function setAvailability(a) {
-  availability = a;
-  $('stockBtn').classList.toggle('active', a === 'stock');
-  $('allBtn').classList.toggle('active', a === 'all');
-  const pool = a === 'stock' ? STOCK_COUNT : flavors.length;
-  $('availabilityHint').innerHTML = a === 'stock'
-    ? `Предлагаем только то, что есть в Gelen — <em>${pool} вкусов в наличии</em>`
-    : `Можно использовать справочник <em>${BRANDS.length} брендов</em> для вдохновения`;
+function setAvailability() {
+  availability = 'stock';
+  const hint = $('availabilityHint');
+  if (hint) hint.innerHTML = `Используем только подтверждённое наличие Gelen — <em>${STOCK_COUNT} вкусов</em>`;
 }
 
 function quick(t, el) {
@@ -152,10 +145,10 @@ function requestedCount(q, intent) {
   if (/четыре вкуса|4 вкуса/.test(q)) return 4;
   if (/пять вкусов|5 вкусов/.test(q)) return 5;
   if (/шесть вкусов|6 вкусов/.test(q)) return 6;
-  if (/сложн|многослой|богат|интерес/.test(q)) return mode === 'master' ? 6 : 5;
-  if (/удиви|стран|необыч/.test(q) || intent.mood === 'экспериментальный') return mode === 'master' ? 6 : 5;
+  if (/сложн|многослой|богат|интерес/.test(q)) return 5;
+  if (/удиви|стран|необыч/.test(q) || intent.mood === 'экспериментальный') return 5;
   if (/легк|мягк|прост|понятн|нович/.test(q)) return 2 + (hashText(q) % 2);
-  if (mode === 'master') return 4 + (hashText(q) % 3);
+  return 3 + (hashText(q) % 3);
   return 3 + (hashText(q) % 3);
 }
 
@@ -194,7 +187,7 @@ function makePercents(selected, intent, q) {
 /* ---------- 10. СБОРКА МИКСА ---------- */
 function buildMix(q) {
   const intent = analyze(q);
-  let pool = availability === 'stock' ? flavors.filter(f => f.inStock) : flavors;
+  let pool = flavors.filter(f => f.inStock);
   if (pool.length < 2) pool = flavors;
 
   const ranked = pool.map(f => ({f, s: score(f, intent)})).sort((a, b) => b.s - a.s);
@@ -209,7 +202,7 @@ function buildMix(q) {
   if (wantsFresh) push((ranked.find(x => x.f.role.includes('modifier') && !selected.find(y => y.id === x.f.id)) || {}).f);
   else push((ranked.find(x => !selected.find(y => y.id === x.f.id) && !x.f.cat.includes('гастрономический')) || {}).f);
 
-  if (mode === 'master' || intent.mood === 'экспериментальный') {
+  if (intent.mood === 'экспериментальный') {
     push((ranked.find(x => !selected.find(y => y.id === x.f.id) &&
       (x.f.cat.includes('необычный') || x.f.cat.includes('цитрус') ||
        x.f.cat.includes('травяной') || x.f.cat.includes('пряный') || x.f.cat.includes('кофе'))) || {}).f);
@@ -234,7 +227,7 @@ function renderMix(ings, intent, q) {
   const cats = [...new Set(ings.flatMap(i => i.flavor.cat))];
   const stockUsed = ings.every(i => i.flavor.inStock);
 
-  const profile = `Получится ${cats.slice(0, 5).join(', ')} микс: ${intent.mood}, комфортный и без случайных сочетаний. В составе ${ings.length} ${ings.length === 2 ? 'вкуса' : 'вкусов/компонентов'}. Режим базы: ${availability === 'stock' ? 'только наличие Gelen' : 'расширенный справочник'}.`;
+  const profile = `Получится ${cats.slice(0, 5).join(', ')} микс: ${intent.mood}, комфортный и без случайных сочетаний. В составе ${ings.length} ${ings.length === 2 ? 'вкуса' : 'вкусов/компонентов'}. Режим базы: только подтверждённое наличие Gelen.`;
 
   const why = ings.map((i, idx) => {
     if (idx === 0) return `${i.flavor.ru} держит основную базу`;
@@ -243,7 +236,6 @@ function renderMix(ings, intent, q) {
     return `${i.flavor.ru} добавляет слой вкуса`;
   }).join(', ') + '.';
 
-  const master = `Для мастера: делаем комфортно и дружелюбно. Базу держим плотнее, яркие кислые/холодные/гастро акценты не перегреваем. Если гость хочет мягче — убери 5–10% с самого яркого компонента и добавь эту долю в базу.`;
 
   const infoHtml = ings.map(i => `
     <div class="flavorInfoItem">
@@ -262,10 +254,10 @@ function renderMix(ings, intent, q) {
           <div>
             <h2 class="mixTitle">${esc(name)}</h2>
             <div class="mixMeta">
-              <span>${mode === 'master' ? 'Режим мастера' : 'Режим гостя'}</span>
+              <span>Подбор по наличию</span>
               <span>·</span>
               <span>${ings.length} ${ings.length === 2 ? 'вкуса' : 'компонентов'}</span>
-              <span class="tagline ${stockUsed ? 'live' : 'ref'}">${stockUsed ? '● всё в наличии' : '◐ со справочником'}</span>
+              <span class="tagline live">● всё в наличии</span>
             </div>
           </div>
         </div>
@@ -297,7 +289,7 @@ function renderMix(ings, intent, q) {
               <div class="num">${idx + 1}</div>
               <div>
                 <strong>${esc(i.flavor.ru)}</strong>
-                <span class="meta">${esc(i.flavor.brand)} · ${esc(i.flavor.name)} · ${i.flavor.inStock ? 'в наличии Gelen' : 'справочник'}</span>
+                <span class="meta">${esc(i.flavor.brand)} · ${esc(i.flavor.name)} · в наличии Gelen</span>
               </div>
             </div>
             <div class="percentWrap">
@@ -314,8 +306,6 @@ function renderMix(ings, intent, q) {
       <div class="section">Почему подходит</div>
       <p class="text">${esc(why)} Под запрос «${esc(q)}» это звучит как ${esc(intent.mood)} образ — как раз под спокойный отдых в Gelen Lounge.</p>
 
-      ${mode === 'master' ? `<div class="section">Совет мастеру</div><p class="text">${esc(master)}</p>` : ''}
-
       <button class="infoBtn" onclick="toggleFlavorInfo()">ℹ️ Инфо по вкусам в этом миксе</button>
       <div id="flavorInfo" class="flavorInfo">${infoHtml}</div>
 
@@ -323,7 +313,6 @@ function renderMix(ings, intent, q) {
         <button class="miniBtn" onclick="submitMix()">🔁 Другой вариант</button>
         <button class="miniBtn" onclick="copyMix()">📋 Скопировать состав</button>
         <button class="miniBtn" onclick="shareMix()">🔗 Ссылка на микс</button>
-        <button class="miniBtn" onclick="askAboutMix()">💬 Обсудить с мастером</button>
       </div>
 
       <p class="notice">Кальян и табачные продукты не являются безопасными для здоровья. Только для 18+.</p>
@@ -351,7 +340,7 @@ function toggleFlavorInfo() {
 function copyMix() {
   if (!lastMix) return;
   const text = `Микс Gelen Lounge: ${title(lastMix.q)[1]}\n` +
-    lastMix.ings.map(i => `• ${i.flavor.ru} (${i.flavor.brand}) — ${i.p}%  [${i.flavor.inStock ? 'в наличии' : 'справочник'}]`).join('\n') +
+    lastMix.ings.map(i => `• ${i.flavor.ru} (${i.flavor.brand}) — ${i.p}%  [в наличии]`).join('\n') +
     `\n\nКрепость: ${strength10(lastMix.ings)}/10`;
   navigator.clipboard?.writeText(text).then(
     () => toast('Состав скопирован ✓'),
@@ -359,18 +348,11 @@ function copyMix() {
   );
 }
 
-function askAboutMix() {
-  if (!lastMix) return;
-  masterQuick(`Оцени микс: ${lastMix.ings.map(i => i.flavor.ru + ' ' + i.p + '%').join(', ')}. Что улучшить?`);
-}
-
 /* Ссылка на микс — параметры в URL, чтобы открыть тот же состав */
 function shareMix() {
   if (!lastMix) return;
   const params = new URLSearchParams({
     q: lastMix.q,
-    m: mode,
-    a: availability,
     f: lastMix.ings.map(i => `${i.flavor.id}:${i.p}`).join(',')
   });
   const url = `${location.origin}${location.pathname}?${params.toString()}`;
@@ -389,8 +371,6 @@ function loadFromUrl() {
   const p = new URLSearchParams(location.search);
   const q = p.get('q');
   const f = p.get('f');
-  if (p.get('m')) setMode(p.get('m'));
-  if (p.get('a')) setAvailability(p.get('a'));
   if (q) {
     $('query').value = q;
     updateCounter();
@@ -417,88 +397,6 @@ function submitMix() {
   if (btn) { btn.style.transform = 'scale(.97)'; setTimeout(() => btn.style.transform = '', 140); }
   const {ings, intent} = buildMix(q);
   renderMix(ings, intent, q);
-}
-
-/* ---------- 12. ЧАТ С МАСТЕРОМ ---------- */
-function chatAdd(role, text) {
-  const box = $('chatBox');
-  if (!box) return;
-  const div = document.createElement('div');
-  div.className = 'msg ' + (role === 'user' ? 'user' : 'bot');
-  div.textContent = text;
-  box.appendChild(div);
-  box.scrollTo({top: box.scrollHeight, behavior: 'smooth'});
-  chatHistory.push({role, text});
-  if (chatHistory.length > 12) chatHistory = chatHistory.slice(-12);
-}
-
-function typingOn() {
-  const box = $('chatBox');
-  const div = document.createElement('div');
-  div.className = 'msg bot';
-  div.id = 'typingMsg';
-  div.innerHTML = '<span class="typing"><i></i><i></i><i></i></span>';
-  box.appendChild(div);
-  box.scrollTo({top: box.scrollHeight, behavior: 'smooth'});
-}
-function typingOff() { $('typingMsg')?.remove(); }
-
-function masterQuick(t) {
-  $('chatInput').value = t;
-  askMaster();
-  $('masterChat').scrollIntoView({behavior: 'smooth', block: 'nearest'});
-}
-
-async function askMaster() {
-  const input = $('chatInput');
-  const q = (input.value || '').trim();
-  if (!q) return;
-  input.value = '';
-  chatAdd('user', q);
-  typingOn();
-
-  const endpoint = window.GPT_MASTER_ENDPOINT || '';
-  if (endpoint) {
-    try {
-      const pool = availability === 'stock' ? flavors.filter(f => f.inStock) : flavors;
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({message: q, availability, mode, flavors: pool.slice(0, 120), history: chatHistory.slice(-8)})
-      });
-      if (res.ok) {
-        const data = await res.json();
-        typingOff();
-        chatAdd('bot', data.answer || 'Я на связи, но ответ пустой. Давай ещё раз.');
-        return;
-      }
-    } catch (e) { console.warn('endpoint error', e); }
-  }
-
-  const answer = localMasterAnswer(q);
-  typingOff();
-  setTimeout(() => chatAdd('bot', answer), 200 + Math.random() * 250);
-}
-
-function localMasterAnswer(q) {
-  const {ings, intent} = buildMix(q);
-  const st = strength10(ings);
-  $('query').value = q;
-  updateCounter();
-
-  const tone = /нович/.test(q) ? 'Я бы сделал комфортно, без перегруза.'
-    : /креп|бар/.test(q) ? 'Тут можно собрать плотнее и взрослее.'
-    : 'Я бы собрал это аккуратно, чтобы было вкусно и не случайно.';
-
-  const list = ings.map(i => `• ${i.flavor.ru} — ${i.p}% (${i.flavor.brand}${i.flavor.inStock ? ' · в наличии' : ' · справочник'})`).join('\n');
-
-  const advice = st >= 8 ? 'По крепости будет ощутимо. Если гость не любит плотный покур — снижаем самые крепкие/тёмные компоненты.'
-    : st <= 5 ? 'По крепости мягко, хорошо для спокойного вечера или новичка.'
-    : 'Крепость средняя: достаточно насыщенно, но без жёсткости.';
-
-  const why = ings.slice(0, 3).map(i => `${i.flavor.ru}: ${i.flavor.use || i.flavor.note}`).join('\n');
-
-  return `${tone}\n\nМой вариант:\n${list}\n\nКрепость: ${st}/10. ${advice}\n\nПочему так:\n${why}\n\nНажми «Подобрать микс» — я выведу это в основной карточке с процентами и инфо по вкусам.`;
 }
 
 /* ---------- 13. АВТОРИЗАЦИЯ ---------- */
